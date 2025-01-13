@@ -16,6 +16,15 @@ turtle_colors = {
     'yellow': '#ffd700',
     'purple': '#800080'
 }
+cards = {
+    "Yellow:+1" : 6,
+    "Green:+1" : 6,
+    "Red:+1" : 6,
+    "Blue:+1" : 6,
+    "Purple:+1" : 6,
+    "Joker:+1" : 5,
+    "Joker:+2": 5,
+}
 
 game_state = {
     "cells": [
@@ -31,6 +40,10 @@ game_state = {
     ],
 }
 
+@app.route('/make_move', methods=['GET', 'POST'])
+def make_move():
+    if request.method == 'POST':
+        pass
 @app.route('/')
 def index():
     return render_template('main_page.html')
@@ -52,19 +65,7 @@ def add_player():
 def game_wait():
     player_id = request.args.get('player_id') or request.form.get('player_id')
 
-    if request.method == 'POST' and player_id is not None:
-        accepted = request.form.get('accepted') == 'true'
 
-        cur = mysql.connection.cursor()
-
-        cur.execute('SELECT COUNT(*) FROM accepted WHERE player_id = %s', (player_id,))
-        exists = cur.fetchone()[0] > 0
-
-        if not exists:
-            cur.execute('INSERT INTO accepted (player_id, accepted) VALUES (%s, %s)', (player_id, accepted))
-            mysql.connection.commit()
-
-        cur.close()
 
     cur = mysql.connection.cursor()
     cur.execute('SELECT COUNT(*) FROM players')
@@ -78,7 +79,7 @@ def game_wait():
 
 @app.route('/game', methods=['GET'])
 def game():
-    return render_template("index.html", game_state=game_state, turtle_colors=turtle_colors)
+    return render_template("index.html", game_state=game_state, turtle_colors=turtle_colors, cards=cards)
 
 
 @socketio.on('player_accepted')
@@ -99,8 +100,10 @@ def handle_player_accepted(data):
     accepted_players = cur.fetchone()[0]
     cur.close()
 
-
     emit('update_acceptance', {'accepted_players': accepted_players}, broadcast=True)
+
+    if accepted_players >= 2:
+        emit('start_game', {'url': '/game', 'player_id': player_id}, broadcast=True)
 
 if __name__ == '__main__':
     socketio.run(app, debug=True)

@@ -39,6 +39,20 @@
             margin-top: 20px;
             color: #333;
         }
+        .loading-screen {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            color: white;
+            justify-content: center;
+            align-items: center;
+            font-size: 1.5rem;
+            z-index: 1000;
+        }
     </style>
 </head>
 <body>
@@ -50,35 +64,46 @@
 
         <div class="stats">
             <p>Całkowita liczba zarejestrowanych graczy: {{ total_players }}</p>
-
+            <p class="accepted-stats">Gracze, którzy zaakceptowali grę: {{ accepted_players }}</p>
         </div>
 
-        <form method="POST" action="/game/wait">
+        <form id="accept-form" method="POST" action="/game/wait">
             <input type="hidden" name="player_id" value="{{ player_id }}">
             <input type="hidden" name="accepted" value="true">
             <button type="submit">Akceptuj</button>
         </form>
     </div>
-<script src="https://cdn.socket.io/4.3.2/socket.io.min.js"></script>
-<script>
-    var socket = io.connect();
 
-    document.querySelector("form").addEventListener("submit", function(event) {
-        event.preventDefault();
+    <div class="loading-screen" id="loading-screen">
+        Ładowanie...
+    </div>
 
-        socket.emit('player_accepted', {
-            player_id: {{ player_id }},
-            accepted: true
+    <script src="https://cdn.socket.io/4.3.2/socket.io.min.js"></script>
+    <script>
+        var socket = io.connect();
+
+        document.getElementById("accept-form").addEventListener("submit", function(event) {
+            event.preventDefault();
+
+            const loadingScreen = document.getElementById('loading-screen');
+            loadingScreen.style.display = 'flex';
+
+            socket.emit('player_accepted', {
+                player_id: {{ player_id }},
+                accepted: true
+            });
         });
-    });
 
+        socket.on('update_acceptance', function(data) {
+            console.log('Received update:', data);
+            document.querySelector('.accepted-stats').textContent = 'Gracze, którzy zaakceptowali grę: ' + data.accepted_players;
+        });
 
-    socket.on('update_acceptance', function(data) {
-        console.log('Received update:', data);
-        document.querySelector('.stats p').textContent = 'Gracze, którzy zaakceptowali grę: ' + data.accepted_players;
-    });
-</script>
-
-
+        socket.on('start_game', (data) => {
+            setTimeout(() => {
+                window.location.href = data.url;
+            }, 2000);
+        });
+    </script>
 </body>
 </html>
