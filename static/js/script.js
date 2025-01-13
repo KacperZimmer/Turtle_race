@@ -13,6 +13,7 @@ turtles.forEach((turtle, index) => {
     });
 });
 
+
 cells.forEach(cell => {
     cell.addEventListener('dragover', e => {
         e.preventDefault();
