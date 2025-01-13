@@ -1,12 +1,12 @@
 from flask import Flask, render_template, request, redirect, url_for
 from flask_mysqldb import MySQL
 from config import Config
+from flask_socketio import SocketIO, emit
+
 app = Flask(__name__)
-
-
+socketio = SocketIO(app)  # Tworzymy instancję Socket.IO
 
 mysql = MySQL(app)
-
 app.config.from_object(Config)
 
 turtle_colors = {
@@ -31,11 +31,9 @@ game_state = {
     ],
 }
 
-
 @app.route('/')
 def index():
     return render_template('main_page.html')
-
 
 @app.route('/add_player', methods=['POST'])
 def add_player():
@@ -49,7 +47,6 @@ def add_player():
         cur.close()
 
         return redirect(url_for('game_wait', player_id=player_id))
-
 
 @app.route('/game/wait', methods=['GET', 'POST'])
 def game_wait():
@@ -67,8 +64,6 @@ def game_wait():
             cur.execute('INSERT INTO accepted (player_id, accepted) VALUES (%s, %s)', (player_id, accepted))
             mysql.connection.commit()
 
-
-
         cur.close()
 
     cur = mysql.connection.cursor()
@@ -81,12 +76,31 @@ def game_wait():
 
     return render_template('waiting_screen.html', player_id=player_id, total_players=total_players, accepted_players=accepted_players)
 
-
-
 @app.route('/game', methods=['GET'])
 def game():
     return render_template("index.html", game_state=game_state, turtle_colors=turtle_colors)
 
 
+@socketio.on('player_accepted')
+def handle_player_accepted(data):
+    player_id = data['player_id']
+    accepted = data['accepted']
+
+
+    cur = mysql.connection.cursor()
+    cur.execute('SELECT COUNT(*) FROM accepted WHERE player_id = %s', (player_id,))
+    exists = cur.fetchone()[0] > 0
+
+    if not exists:
+        cur.execute('INSERT INTO accepted (player_id, accepted) VALUES (%s, %s)', (player_id, accepted))
+        mysql.connection.commit()
+
+    cur.execute('SELECT COUNT(*) FROM accepted WHERE accepted = TRUE')
+    accepted_players = cur.fetchone()[0]
+    cur.close()
+
+
+    emit('update_acceptance', {'accepted_players': accepted_players}, broadcast=True)
+
 if __name__ == '__main__':
-    app.run(debug=True)
+    socketio.run(app, debug=True)
