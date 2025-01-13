@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Oczekiwanie</title>
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background-color: #f0f8ff;
+        }
+        .container {
+            text-align: center;
+        }
+        button {
+            padding: 15px 30px;
+            font-size: 1.5rem;
+            color: white;
+            background-color: #32cd32;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #28a428;
+        }
+        .player-info {
+            margin-bottom: 20px;
+            font-size: 1.2rem;
+            color: #555;
+        }
+        .stats {
+            font-size: 1.1rem;
+            margin-top: 20px;
+            color: #333;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="player-info">
+            <p>Twój ID gracza: {{ player_id }}</p>
+        </div>
+        <h1>Czekaj na rozpoczęcie gry</h1>
+
+        <div class="stats">
+            <p>Całkowita liczba zarejestrowanych graczy: {{ total_players }}</p>
+            <p>Gracze, którzy zaakceptowali grę: {{ accepted_players }}</p>
+        </div>
+
+        <form method="POST" action="/game/wait">
+            <input type="hidden" name="player_id" value="{{ player_id }}">
+            <input type="hidden" name="accepted" value="true">
+            <button type="submit">Akceptuj</button>
+        </form>
+    </div>
+</body>
+</html>

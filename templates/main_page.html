@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pędzące Żółwie - Gra</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/main_page.css') }}">
+</head>
+<body>
+    <div class="container">
+        <h1>Pędzące Żółwie - Podaj swoje imię</h1>
+
+        <form action="/add_player" method="POST">
+            <label for="name">Imię gracza:</label>
+            <input type="text" id="name" name="name" required>
+            <button type="submit">Zarejestruj się</button>
+        </form>
+
+        <div class="players-list">
+            <h2>Gracze:</h2>
+            <ul>
+                {% for player in players %}
+                <li>{{ player[1] }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+
+
+</body>
+</html>
