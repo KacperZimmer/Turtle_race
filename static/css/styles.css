@@ -1,3 +1,4 @@
+/* Ogólny układ strony */
 body {
     margin: 0;
     font-family: Arial, sans-serif;
@@ -5,9 +6,18 @@ body {
     display: flex;
     justify-content: center;
     align-items: center;
+    flex-direction: column;
     height: 100vh;
 }
 
+.board-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2rem;
+}
+
+/* Plansza */
 .board {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
@@ -71,23 +81,58 @@ body {
     transform: scale(1.1);
 }
 
-/* Kolory dla różnych żółwi */
-.turtle.blue {
-    background-color: #1e90ff;
+.cards-container {
+    text-align: center;
+    margin-top: 20px;
 }
 
-.turtle.green {
-    background-color: #32cd32;
+.cards {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
 }
 
-.turtle.red {
-    background-color: #ff4500;
+.card {
+    width: 100px;
+    height: 150px;
+    border-radius: 10px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-weight: bold;
+    font-size: 1.2rem;
+    text-align: center;
+    color: white;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+    border: 2px solid #fff;
+    transition: transform 0.3s ease;
 }
 
-.turtle.yellow {
+.card:hover {
+    transform: scale(1.1);
+}
+
+.card.yellow {
     background-color: #ffd700;
 }
 
-.turtle.purple {
+.card.green {
+    background-color: #32cd32;
+}
+
+.card.red {
+    background-color: #ff4500;
+}
+
+.card.blue {
+    background-color: #1e90ff;
+}
+
+.card.purple {
     background-color: #800080;
+}
+
+.card.joker {
+    background: linear-gradient(45deg, red, orange, yellow, green, blue, purple);
+    text-shadow: 0 0 3px black;
 }

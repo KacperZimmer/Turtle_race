@@ -9,6 +9,14 @@ socketio = SocketIO(app)  # Tworzymy instancję Socket.IO
 mysql = MySQL(app)
 app.config.from_object(Config)
 
+turtles = {
+    'blue',
+    'yellow',
+    'red',
+    'green',
+    'purple',
+}
+
 turtle_colors = {
     'blue': '#1e90ff',
     'green': '#32cd32',
@@ -17,13 +25,13 @@ turtle_colors = {
     'purple': '#800080'
 }
 cards = {
-    "Yellow:+1" : 6,
-    "Green:+1" : 6,
-    "Red:+1" : 6,
-    "Blue:+1" : 6,
-    "Purple:+1" : 6,
-    "Joker:+1" : 5,
-    "Joker:+2": 5,
+    "Yellow:+1",
+    "Green:+1" ,
+    "Red:+1" ,
+    "Blue:+1" ,
+    "Purple:+1",
+    "Joker:+1" ,
+    "Joker:+2"
 }
 
 game_state = {
@@ -65,8 +73,6 @@ def add_player():
 def game_wait():
     player_id = request.args.get('player_id') or request.form.get('player_id')
 
-
-
     cur = mysql.connection.cursor()
     cur.execute('SELECT COUNT(*) FROM players')
     total_players = cur.fetchone()[0]
@@ -77,8 +83,13 @@ def game_wait():
 
     return render_template('waiting_screen.html', player_id=player_id, total_players=total_players, accepted_players=accepted_players)
 
+import random
+
 @app.route('/game', methods=['GET'])
 def game():
+    drawn_cards = random.sample(cards, 4)
+    print(drawn_cards)
+
     player_id = request.args.get('player_id')
     if not player_id:
         return redirect(url_for('index'))
@@ -100,10 +111,12 @@ def game():
         "index.html",
         game_state=game_state,            # Stan gry
         turtle_colors=turtle_colors,      # Kolory żółwi
-        cards=cards,                      # Karty
+        cards=cards,                      # Karty (pełny zbiór)
         player_id=player_id,              # ID gracza
-        player_name=player_data[0]        # Imię gracza
+        player_name=player_data[0],       # Imię gracza
+        drawn_cards=drawn_cards           # Wylosowane 4 karty
     )
+
 
 @socketio.on('join_room')
 def handle_join_room(data):
