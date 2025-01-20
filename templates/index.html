@@ -8,7 +8,6 @@
 </head>
 <body>
     <div class="board-container">
-
         <div class="board">
             {% for cell in game_state['cells'] %}
             <div class="cell">
@@ -20,7 +19,6 @@
             </div>
             {% endfor %}
         </div>
-
         <div class="cards-container">
             <h2>Twoje Karty</h2>
             <div class="cards">
@@ -45,9 +43,11 @@
                 {% endfor %}
             </div>
         </div>
-
     </div>
-
+    <script>
+        const turtle_colors = {{ turtle_colors|tojson }};
+    </script>
+    <script src="https://cdn.socket.io/4.3.2/socket.io.min.js"></script>
     <script src="{{ url_for('static', filename='js/script.js') }}"></script>
 </body>
 </html>

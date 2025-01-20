@@ -48,10 +48,7 @@ game_state = {
     ],
 }
 
-@app.route('/make_move', methods=['GET', 'POST'])
-def make_move():
-    if request.method == 'POST':
-        pass
+
 @app.route('/')
 def index():
     return render_template('main_page.html')
@@ -118,6 +115,29 @@ def game():
         drawn_cards=drawn_cards           # Wylosowane 4 karty
     )
 
+@app.route('/make_move', methods=['POST'])
+def make_move():
+    if request.method == 'POST':
+        data = request.get_json()
+        turtle_color = data['turtle_color']
+        new_position = data['new_position']
+
+        # Update the game state
+        for cell in game_state['cells']:
+            if turtle_color in cell:
+                cell.remove(turtle_color)
+
+        game_state['cells'][new_position].append(turtle_color)
+
+        # Emit the updated game state to all clients
+        socketio.emit('update_game_state', game_state)
+
+        return "Move made", 200
+
+@socketio.on('connect')
+def handle_connect():
+    emit('update_game_state', game_state)
+
 
 @socketio.on('join_room')
 def handle_join_room(data):
@@ -145,8 +165,8 @@ def handle_player_accepted(data):
     accepted_players = cur.fetchone()[0]
 
 
-    cur.execute('INSERT INTO player_turtle (player_id, turtle_color) VALUES (%s, %s)', (player_id, random_player_turtle))
-    mysql.connection.commit()
+    # cur.execute('INSERT INTO player_turtle (player_id, turtle_color) VALUES (%s, %s)', (player_id, random_player_turtle))
+    # mysql.connection.commit()
     cur.close()
 
 
@@ -160,7 +180,7 @@ def handle_player_accepted(data):
         cur.close()
 
         for pid in accepted_player_ids:
-            emit('start_game', {'url': f'/game?player_id={pid[0]}','turtle_color': random_player_turtle, 'player_id': pid[0]}, room=f'player_{pid[0]}')
+            emit('start_game', {'url': f'/game?player_id={pid[0]}', 'player_id': pid[0]}, room=f'player_{pid[0]}')
 
 if __name__ == '__main__':
     socketio.run(app, debug=True)
