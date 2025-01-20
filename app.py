@@ -9,13 +9,13 @@ socketio = SocketIO(app)  # Tworzymy instancję Socket.IO
 mysql = MySQL(app)
 app.config.from_object(Config)
 
-turtles = {
+turtles = [
     'blue',
     'yellow',
     'red',
     'green',
     'purple',
-}
+]
 
 turtle_colors = {
     'blue': '#1e90ff',
@@ -90,6 +90,7 @@ def game():
     drawn_cards = random.sample(cards, 4)
     print(drawn_cards)
 
+
     player_id = request.args.get('player_id')
     if not player_id:
         return redirect(url_for('index'))
@@ -128,6 +129,10 @@ def handle_player_accepted(data):
     player_id = data['player_id']
     accepted = data['accepted']
 
+
+
+    random_player_turtle = random.choice(turtles)
+
     cur = mysql.connection.cursor()
     cur.execute('SELECT COUNT(*) FROM accepted WHERE player_id = %s', (player_id,))
     exists = cur.fetchone()[0] > 0
@@ -138,7 +143,13 @@ def handle_player_accepted(data):
 
     cur.execute('SELECT COUNT(*) FROM accepted WHERE accepted = TRUE')
     accepted_players = cur.fetchone()[0]
+
+
+    cur.execute('INSERT INTO player_turtle (player_id, turtle_color) VALUES (%s, %s)', (player_id, random_player_turtle))
+    mysql.connection.commit()
     cur.close()
+
+
 
     emit('update_acceptance', {'accepted_players': accepted_players}, broadcast=True)
 
@@ -149,7 +160,7 @@ def handle_player_accepted(data):
         cur.close()
 
         for pid in accepted_player_ids:
-            emit('start_game', {'url': f'/game?player_id={pid[0]}', 'player_id': pid[0]}, room=f'player_{pid[0]}')
+            emit('start_game', {'url': f'/game?player_id={pid[0]}','turtle_color': random_player_turtle, 'player_id': pid[0]}, room=f'player_{pid[0]}')
 
 if __name__ == '__main__':
     socketio.run(app, debug=True)
