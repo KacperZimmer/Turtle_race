@@ -68,7 +68,7 @@ function addDragAndDropHandlers() {
         });
     });
 
-    cells.forEach(cell => {
+    cells.forEach((cell, cellIndex) => {
         cell.addEventListener('dragover', e => {
             e.preventDefault();
             e.dataTransfer.dropEffect = 'move';
@@ -83,7 +83,13 @@ function addDragAndDropHandlers() {
             const turtlesInCell = Array.from(parentCell.children);
             const draggedIndex = turtlesInCell.indexOf(draggedTurtle);
 
-            if (draggedIndex !== -1) {
+            const parentCellIndex = Array.from(parentCell.parentNode.children).indexOf(parentCell);
+
+            if (parentCellIndex === 0) {
+                // Allow individual turtle movement from the first cell
+                cell.appendChild(draggedTurtle);
+                makeMove(draggedTurtle.textContent, Array.from(cell.parentNode.children).indexOf(cell));
+            } else if (parentCellIndex > 0 && draggedIndex !== -1) {
                 const turtlesBelow = turtlesInCell.slice(draggedIndex);
                 turtlesBelow.forEach(turtle => {
                     cell.appendChild(turtle);
