@@ -7,18 +7,47 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
 </head>
 <body>
-    <div class="board">
-        {% for cell in game_state['cells'] %}
-        <div class="cell">
-            {% for turtle in cell %}
-            <p class="turtle" draggable="true" style="background-color: {{ turtle_colors[turtle] }};">
-
-                {{ turtle }}
-            </p>
+    <div class="board-container">
+        <div class="board">
+            {% for cell in game_state['cells'] %}
+            <div class="cell">
+                {% for turtle in cell %}
+                <p class="turtle" draggable="true" style="background-color: {{ turtle_colors[turtle] }};">
+                    {{ turtle }}
+                </p>
+                {% endfor %}
+            </div>
             {% endfor %}
         </div>
-        {% endfor %}
+        <div class="cards-container">
+            <h2>Twoje Karty</h2>
+            <div class="cards">
+                {% for card in drawn_cards %}
+                <div class="card
+                    {% if 'Joker' in card %}
+                        joker
+                    {% elif 'Yellow' in card %}
+                        yellow
+                    {% elif 'Green' in card %}
+                        green
+                    {% elif 'Red' in card %}
+                        red
+                    {% elif 'Blue' in card %}
+                        blue
+                    {% elif 'Purple' in card %}
+                        purple
+                    {% endif %}
+                ">
+                    {{ card }}
+                </div>
+                {% endfor %}
+            </div>
+        </div>
     </div>
+    <script>
+        const turtle_colors = {{ turtle_colors|tojson }};
+    </script>
+    <script src="https://cdn.socket.io/4.3.2/socket.io.min.js"></script>
     <script src="{{ url_for('static', filename='js/script.js') }}"></script>
 </body>
 </html>

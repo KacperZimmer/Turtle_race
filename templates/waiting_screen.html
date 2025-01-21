@@ -79,31 +79,34 @@
     </div>
 
     <script src="https://cdn.socket.io/4.3.2/socket.io.min.js"></script>
-    <script>
-        var socket = io.connect();
+<script>
+    var socket = io.connect();
 
-        document.getElementById("accept-form").addEventListener("submit", function(event) {
-            event.preventDefault();
+    document.getElementById("accept-form").addEventListener("submit", function(event) {
+        event.preventDefault();
 
-            const loadingScreen = document.getElementById('loading-screen');
-            loadingScreen.style.display = 'flex';
+        const loadingScreen = document.getElementById('loading-screen');
+        loadingScreen.style.display = 'flex';
 
-            socket.emit('player_accepted', {
-                player_id: {{ player_id }},
-                accepted: true
-            });
+        socket.emit('player_accepted', {
+            player_id: {{ player_id }},
+            accepted: true
         });
 
-        socket.on('update_acceptance', function(data) {
-            console.log('Received update:', data);
-            document.querySelector('.accepted-stats').textContent = 'Gracze, którzy zaakceptowali grę: ' + data.accepted_players;
-        });
+        socket.emit('join_room', { player_id: {{ player_id }} });
+    });
 
-        socket.on('start_game', (data) => {
-            setTimeout(() => {
-                window.location.href = data.url;
-            }, 2000);
-        });
-    </script>
+    socket.on('update_acceptance', function(data) {
+        console.log('Received update:', data);
+        document.querySelector('.accepted-stats').textContent = 'Gracze, którzy zaakceptowali grę: ' + data.accepted_players;
+    });
+
+    socket.on('start_game', (data) => {
+        setTimeout(() => {
+            window.location.href = data.url;
+        }, 2000);
+    });
+</script>
+
 </body>
 </html>

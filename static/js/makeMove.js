@@ -1,11 +1,6 @@
 const socket = io();
 
-socket.on('connect', () => {
-    console.log('Connected to Socket.IO server');
-});
-
 socket.on('update_game_state', (new_game_state) => {
-    console.log('Received new game state:', new_game_state);
     updateGameState(new_game_state);
 });
 
@@ -30,7 +25,6 @@ function updateGameState(new_game_state) {
         board.appendChild(cellElement);
     });
 
-    console.log('Game state updated in the DOM');
     addDragAndDropHandlers();
 }
 
@@ -46,8 +40,6 @@ function makeMove(turtle, newPosition) {
             'Content-Type': 'application/json'
         },
         body: JSON.stringify(data)
-    }).then(() => {
-        console.log(`Move made for turtle: ${turtle} to position: ${newPosition}`);
     });
 }
 
@@ -56,9 +48,7 @@ function addDragAndDropHandlers() {
     const cells = document.querySelectorAll('.cell');
 
     turtles.forEach((turtle, index) => {
-        turtle.addEventListener('dragstart', (e) => {
-            e.dataTransfer.effectAllowed = 'move';
-            e.dataTransfer.setData('text/plain', null); // Required for Firefox
+        turtle.addEventListener('dragstart', () => {
             turtle.classList.add('dragged');
             turtle.dataset.index = index;
         });
@@ -68,13 +58,8 @@ function addDragAndDropHandlers() {
         });
     });
 
-    cells.forEach((cell, cellIndex) => {
+    cells.forEach(cell => {
         cell.addEventListener('dragover', e => {
-            e.preventDefault();
-            e.dataTransfer.dropEffect = 'move';
-        });
-
-        cell.addEventListener('drop', e => {
             e.preventDefault();
             const draggedTurtle = document.querySelector('.dragged');
             if (!draggedTurtle) return;
@@ -83,13 +68,7 @@ function addDragAndDropHandlers() {
             const turtlesInCell = Array.from(parentCell.children);
             const draggedIndex = turtlesInCell.indexOf(draggedTurtle);
 
-            const parentCellIndex = Array.from(parentCell.parentNode.children).indexOf(parentCell);
-
-            if (parentCellIndex === 0) {
-                // Allow individual turtle movement from the first cell
-                cell.appendChild(draggedTurtle);
-                makeMove(draggedTurtle.textContent, Array.from(cell.parentNode.children).indexOf(cell));
-            } else if (parentCellIndex > 0 && draggedIndex !== -1) {
+            if (draggedIndex !== -1) {
                 const turtlesBelow = turtlesInCell.slice(draggedIndex);
                 turtlesBelow.forEach(turtle => {
                     cell.appendChild(turtle);
@@ -100,7 +79,4 @@ function addDragAndDropHandlers() {
     });
 }
 
-document.addEventListener('DOMContentLoaded', () => {
-    console.log('Document loaded, adding drag and drop handlers');
-    addDragAndDropHandlers();
-});
+document.addEventListener('DOMContentLoaded', addDragAndDropHandlers);
