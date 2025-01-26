@@ -17,13 +17,7 @@ turtles = [
     'purple',
 ]
 
-turtle_colors = {
-    'blue': '#1e90ff',
-    'green': '#32cd32',
-    'red': '#ff4500',
-    'yellow': '#ffd700',
-    'purple': '#800080'
-}
+
 cards = {
     "Yellow:+1",
     "Green:+1" ,
@@ -84,9 +78,14 @@ import random
 
 @app.route('/game', methods=['GET'])
 def game():
+    turtle_colors = {
+        'blue': '#1e90ff',
+        'green': '#32cd32',
+        'red': '#ff4500',
+        'yellow': '#ffd700',
+        'purple': '#800080'
+    }
     drawn_cards = random.sample(cards, 4)
-    print(drawn_cards)
-
 
     player_id = request.args.get('player_id')
     if not player_id:
@@ -98,21 +97,33 @@ def game():
         return "Nieprawidłowy ID gracza.", 400
 
     cur = mysql.connection.cursor()
+
     cur.execute("SELECT name FROM players WHERE id = %s", (player_id,))
     player_data = cur.fetchone()
+
+    cur.execute("SELECT turtle_color FROM turtle_colors WHERE player_id = %s", (player_id,))
+    turtle_color_data = cur.fetchone()
     cur.close()
 
+    print(turtle_color_data)
     if not player_data:
         return "Nie znaleziono gracza.", 404
 
+    if not turtle_color_data:
+        return "Nie przypisano koloru żółwia.", 404
+
+    player_name = player_data[0]
+    player_turtle_color = turtle_color_data[0]
+
     return render_template(
         "index.html",
-        game_state=game_state,            # Stan gry
-        turtle_colors=turtle_colors,      # Kolory żółwi
-        cards=cards,                      # Karty (pełny zbiór)
-        player_id=player_id,              # ID gracza
-        player_name=player_data[0],       # Imię gracza
-        drawn_cards=drawn_cards           # Wylosowane 4 karty
+        game_state=game_state,
+        turtle_colors=turtle_colors,
+        cards=cards,
+        player_id=player_id,
+        player_name=player_name,
+        player_turtle_color=player_turtle_color,
+        drawn_cards=drawn_cards
     )
 
 @app.route('/make_move', methods=['POST'])
@@ -149,11 +160,18 @@ def handle_player_accepted(data):
     player_id = data['player_id']
     accepted = data['accepted']
 
-
-
-    random_player_turtle = random.choice(turtles)
-
+    # Pobierz dostępne kolory żółwi
     cur = mysql.connection.cursor()
+    cur.execute('SELECT turtle_color FROM turtle_colors')
+    used_turtles = [row[0] for row in cur.fetchall()]
+    available_turtles = [turtle for turtle in turtles if turtle not in used_turtles]
+
+    if not available_turtles:
+        emit('error', {'message': 'Brak dostępnych kolorów żółwi'}, room=f'player_{player_id}')
+        return
+
+    random_player_turtle = random.choice(available_turtles)
+
     cur.execute('SELECT COUNT(*) FROM accepted WHERE player_id = %s', (player_id,))
     exists = cur.fetchone()[0] > 0
 
@@ -164,12 +182,11 @@ def handle_player_accepted(data):
     cur.execute('SELECT COUNT(*) FROM accepted WHERE accepted = TRUE')
     accepted_players = cur.fetchone()[0]
 
+    cur.execute('INSERT INTO turtle_colors (player_id, turtle_color) VALUES (%s, %s)',
+                (player_id, random_player_turtle))
+    mysql.connection.commit()
 
-    # cur.execute('INSERT INTO player_turtle (player_id, turtle_color) VALUES (%s, %s)', (player_id, random_player_turtle))
-    # mysql.connection.commit()
     cur.close()
-
-
 
     emit('update_acceptance', {'accepted_players': accepted_players}, broadcast=True)
 
