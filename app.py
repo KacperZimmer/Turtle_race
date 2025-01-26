@@ -4,7 +4,7 @@ from config import Config
 from flask_socketio import SocketIO, emit, join_room
 
 app = Flask(__name__)
-socketio = SocketIO(app)  # Tworzymy instancję Socket.IO
+socketio = SocketIO(app)
 
 mysql = MySQL(app)
 app.config.from_object(Config)
@@ -160,7 +160,6 @@ def handle_player_accepted(data):
     player_id = data['player_id']
     accepted = data['accepted']
 
-    # Pobierz dostępne kolory żółwi
     cur = mysql.connection.cursor()
     cur.execute('SELECT turtle_color FROM turtle_colors')
     used_turtles = [row[0] for row in cur.fetchall()]
