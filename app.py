@@ -78,6 +78,7 @@ import random
 
 @app.route('/game', methods=['GET'])
 def game():
+    # Definicja kolorów żółwi
     turtle_colors = {
         'blue': '#1e90ff',
         'green': '#32cd32',
@@ -85,7 +86,6 @@ def game():
         'yellow': '#ffd700',
         'purple': '#800080'
     }
-    drawn_cards = random.sample(cards, 4)
 
     player_id = request.args.get('player_id')
     if not player_id:
@@ -101,13 +101,23 @@ def game():
     cur.execute("SELECT name FROM players WHERE id = %s", (player_id,))
     player_data = cur.fetchone()
 
+    if not player_data:
+        return "Nie znaleziono gracza.", 404
+
+    cur.execute("SELECT card FROM player_cards WHERE player_id = %s", (player_id,))
+    player_cards = [row[0] for row in cur.fetchall()]
+
+    if not player_cards:
+        drawn_cards = random.sample(cards, 4)
+        for card in drawn_cards:
+            cur.execute("INSERT INTO player_cards (player_id, card) VALUES (%s, %s)", (player_id, card))
+        mysql.connection.commit()
+    else:
+        drawn_cards = player_cards
+
     cur.execute("SELECT turtle_color FROM turtle_colors WHERE player_id = %s", (player_id,))
     turtle_color_data = cur.fetchone()
     cur.close()
-
-    print(turtle_color_data)
-    if not player_data:
-        return "Nie znaleziono gracza.", 404
 
     if not turtle_color_data:
         return "Nie przypisano koloru żółwia.", 404
