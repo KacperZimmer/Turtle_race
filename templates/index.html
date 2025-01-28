@@ -19,34 +19,64 @@
             </div>
             {% endfor %}
         </div>
-        <div class="cards-container">
-            <h2>Twoje Karty</h2>
-            <div class="cards">
-                {% for card in drawn_cards %}
-                <div class="card
-                    {% if 'Joker' in card %}
-                        joker
-                    {% elif 'Yellow' in card %}
-                        yellow
-                    {% elif 'Green' in card %}
-                        green
-                    {% elif 'Red' in card %}
-                        red
-                    {% elif 'Blue' in card %}
-                        blue
-                    {% elif 'Purple' in card %}
-                        purple
-                    {% endif %}
-                ">
-                    {{ card }}
-                </div>
-                {% endfor %}
-            </div>
+
+        <!-- Sekcja kart -->
+       <div class="cards-container">
+    <h2>Twoje Karty</h2>
+    <input type="hidden" id="player-id" value="{{ player_id }}">
+    <div class="cards">
+        {% for card in drawn_cards %}
+        <div class="card
+            {% if 'Joker' in card %}
+                joker
+            {% elif 'Yellow' in card %}
+                yellow
+            {% elif 'Green' in card %}
+                green
+            {% elif 'Red' in card %}
+                red
+            {% elif 'Blue' in card %}
+                blue
+            {% elif 'Purple' in card %}
+                purple
+            {% endif %}
+        ">
+            {{ card }}
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+        <div class="player-info">
+            <h2>Witaj, {{ player_name }}</h2>
+            <p>
+                Twój kolor żółwia to:
+                <span id="turtle-color" style="color: {{ turtle_colors[player_turtle_color] }}; font-weight: bold;">
+                    {{ player_turtle_color }}
+                </span>
+            </p>
+            <button id="toggle-color" class="btn">Pokaż/Ukryj Kolor</button>
         </div>
     </div>
     <script>
-        const turtle_colors = {{ turtle_colors|tojson }};
+        const turtle_colors = {{ turtle_colors | tojson }};
     </script>
+
+    <script>
+        const toggleButton = document.getElementById('toggle-color');
+        const turtleColor = document.getElementById('turtle-color');
+
+        toggleButton.addEventListener('click', () => {
+            if (turtleColor.style.display === 'none') {
+                turtleColor.style.display = 'inline';
+                toggleButton.textContent = 'Ukryj Kolor';
+            } else {
+                turtleColor.style.display = 'none';
+                toggleButton.textContent = 'Pokaż Kolor';
+            }
+        });
+    </script>
+
     <script src="https://cdn.socket.io/4.3.2/socket.io.min.js"></script>
     <script src="{{ url_for('static', filename='js/script.js') }}"></script>
 </body>
