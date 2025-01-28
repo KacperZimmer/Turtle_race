@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, url_for
+from flask import Flask, render_template, request, redirect, url_for, jsonify
 from flask_mysqldb import MySQL
 from config import Config
 from flask_socketio import SocketIO, emit, join_room
@@ -47,6 +47,41 @@ game_state = {
 def index():
     return render_template('main_page.html')
 
+
+@app.route('/play_card', methods=['POST'])
+def play_card():
+    data = request.get_json()
+    card = data['card']
+    player_id = data['player_id']
+
+    cur = mysql.connection.cursor()
+
+    try:
+        cur.execute("""
+            DELETE FROM player_cards 
+            WHERE player_id = %s AND card = %s 
+            LIMIT 1
+        """, (player_id, card))
+
+        new_card = random.choice(list(cards))
+        cur.execute("""
+            INSERT INTO player_cards (player_id, card)
+            VALUES (%s, %s)
+        """, (player_id, new_card))
+
+        mysql.connection.commit()
+
+        return jsonify({
+            'success': True,
+            'new_card': new_card
+        })
+
+    except Exception as e:
+        mysql.connection.rollback()
+        return jsonify({'success': False, 'error': str(e)})
+
+    finally:
+        cur.close()
 @app.route('/add_player', methods=['POST'])
 def add_player():
     if request.method == 'POST':
@@ -78,7 +113,6 @@ import random
 
 @app.route('/game', methods=['GET'])
 def game():
-    # Definicja kolorów żółwi
     turtle_colors = {
         'blue': '#1e90ff',
         'green': '#32cd32',
@@ -143,14 +177,12 @@ def make_move():
         turtle_color = data['turtle_color']
         new_position = data['new_position']
 
-        # Update the game state
         for cell in game_state['cells']:
             if turtle_color in cell:
                 cell.remove(turtle_color)
 
         game_state['cells'][new_position].append(turtle_color)
 
-        # Emit the updated game state to all clients
         socketio.emit('update_game_state', game_state)
 
         return "Move made", 200

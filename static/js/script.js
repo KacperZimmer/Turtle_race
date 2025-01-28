@@ -98,8 +98,61 @@ function addDragAndDropHandlers() {
         });
     });
 }
+function setupCardListeners() {
+    document.querySelectorAll('.card').forEach(card => {
+        card.addEventListener('click', handleCardClick);
+    });
+}
+
+function handleCardClick(event) {
+    const cardElement = event.currentTarget;
+    const cardText = cardElement.textContent.trim();
+    const player_id = parseInt(document.getElementById('player-id').value);
+
+    playCard(cardText, player_id, cardElement);
+}
+
+function playCard(card, player_id, cardElement) {
+    fetch('/play_card', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            card: card,
+            player_id: player_id
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Replace old card with new card
+            const newCard = createCardElement(data.new_card);
+            cardElement.parentNode.replaceChild(newCard, cardElement);
+        }
+    });
+}
+
+function createCardElement(cardText) {
+    const cardDiv = document.createElement('div');
+    cardDiv.className = `card ${getCardClass(cardText)}`;
+    cardDiv.textContent = cardText;
+    cardDiv.addEventListener('click', handleCardClick);
+    return cardDiv;
+}
+
+function getCardClass(cardText) {
+    if (cardText.includes('Joker')) return 'joker';
+    if (cardText.includes('Yellow')) return 'yellow';
+    if (cardText.includes('Green')) return 'green';
+    if (cardText.includes('Red')) return 'red';
+    if (cardText.includes('Blue')) return 'blue';
+    if (cardText.includes('Purple')) return 'purple';
+    return '';
+}
 
 document.addEventListener('DOMContentLoaded', () => {
     console.log('Document loaded, adding drag and drop handlers');
     addDragAndDropHandlers();
+    setupCardListeners()
 });

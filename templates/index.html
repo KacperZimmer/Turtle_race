@@ -8,7 +8,6 @@
 </head>
 <body>
     <div class="board-container">
-        <!-- Sekcja planszy -->
         <div class="board">
             {% for cell in game_state['cells'] %}
             <div class="cell">
@@ -22,32 +21,32 @@
         </div>
 
         <!-- Sekcja kart -->
-        <div class="cards-container">
-            <h2>Twoje Karty</h2>
-            <div class="cards">
-                {% for card in drawn_cards %}
-                <div class="card
-                    {% if 'Joker' in card %}
-                        joker
-                    {% elif 'Yellow' in card %}
-                        yellow
-                    {% elif 'Green' in card %}
-                        green
-                    {% elif 'Red' in card %}
-                        red
-                    {% elif 'Blue' in card %}
-                        blue
-                    {% elif 'Purple' in card %}
-                        purple
-                    {% endif %}
-                ">
-                    {{ card }}
-                </div>
-                {% endfor %}
-            </div>
+       <div class="cards-container">
+    <h2>Twoje Karty</h2>
+    <input type="hidden" id="player-id" value="{{ player_id }}">
+    <div class="cards">
+        {% for card in drawn_cards %}
+        <div class="card
+            {% if 'Joker' in card %}
+                joker
+            {% elif 'Yellow' in card %}
+                yellow
+            {% elif 'Green' in card %}
+                green
+            {% elif 'Red' in card %}
+                red
+            {% elif 'Blue' in card %}
+                blue
+            {% elif 'Purple' in card %}
+                purple
+            {% endif %}
+        ">
+            {{ card }}
         </div>
+        {% endfor %}
+    </div>
+</div>
 
-        <!-- Informacje o graczu -->
         <div class="player-info">
             <h2>Witaj, {{ player_name }}</h2>
             <p>
