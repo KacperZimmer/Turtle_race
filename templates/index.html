@@ -7,46 +7,10 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
 </head>
 <body>
-    <div class="board-container">
-        <div class="board">
-            {% for cell in game_state['cells'] %}
-            <div class="cell">
-                {% for turtle in cell %}
-                <p class="turtle" draggable="true" style="background-color: {{ turtle_colors[turtle] }};">
-                    {{ turtle }}
-                </p>
-                {% endfor %}
-            </div>
-            {% endfor %}
-        </div>
 
-        <!-- Sekcja kart -->
-       <div class="cards-container">
-    <h2>Twoje Karty</h2>
-    <input type="hidden" id="player-id" value="{{ player_id }}">
-    <div class="cards">
-        {% for card in drawn_cards %}
-        <div class="card
-            {% if 'Joker' in card %}
-                joker
-            {% elif 'Yellow' in card %}
-                yellow
-            {% elif 'Green' in card %}
-                green
-            {% elif 'Red' in card %}
-                red
-            {% elif 'Blue' in card %}
-                blue
-            {% elif 'Purple' in card %}
-                purple
-            {% endif %}
-        ">
-            {{ card }}
-        </div>
-        {% endfor %}
-    </div>
-</div>
-
+<div class="main-container">
+    <!-- Sekcja informacji o graczu, kart i logów -->
+    <div class="top-panel">
         <div class="player-info">
             <h2>Witaj, {{ player_name }}</h2>
             <p>
@@ -57,27 +21,79 @@
             </p>
             <button id="toggle-color" class="btn">Pokaż/Ukryj Kolor</button>
         </div>
+
+        <div class="cards-container">
+            <h2>Twoje Karty</h2>
+            <input type="hidden" id="player-id" value="{{ player_id }}">
+            <div class="cards">
+                {% for card in drawn_cards %}
+                <div class="card
+                    {% if 'Joker' in card %}
+                        joker
+                    {% elif 'Yellow' in card %}
+                        yellow
+                    {% elif 'Green' in card %}
+                        green
+                    {% elif 'Red' in card %}
+                        red
+                    {% elif 'Blue' in card %}
+                        blue
+                    {% elif 'Purple' in card %}
+                        purple
+                    {% endif %}
+                ">
+                    {{ card }}
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Logi gry pod kartami -->
+        <div class="log-container" id="log-container">
+            <h2>Logi gry</h2>
+            <div class="logs"></div>
+        </div>
     </div>
-    <script>
-        const turtle_colors = {{ turtle_colors | tojson }};
-    </script>
 
-    <script>
-        const toggleButton = document.getElementById('toggle-color');
-        const turtleColor = document.getElementById('turtle-color');
+    <!-- Plansza gry -->
+    <div class="game-panel">
+        <div class="board-container">
+            <div class="board">
+                {% for cell in game_state['cells'] %}
+                <div class="cell">
+                    {% for turtle in cell %}
+                    <p class="turtle" draggable="true" style="background-color: {{ turtle_colors[turtle] }};">
+                        {{ turtle }}
+                    </p>
+                    {% endfor %}
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
 
-        toggleButton.addEventListener('click', () => {
-            if (turtleColor.style.display === 'none') {
-                turtleColor.style.display = 'inline';
-                toggleButton.textContent = 'Ukryj Kolor';
-            } else {
-                turtleColor.style.display = 'none';
-                toggleButton.textContent = 'Pokaż Kolor';
-            }
-        });
-    </script>
+<script>
+    const toggleButton = document.getElementById('toggle-color');
+    const turtleColor = document.getElementById('turtle-color');
 
-    <script src="https://cdn.socket.io/4.3.2/socket.io.min.js"></script>
-    <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+    toggleButton.addEventListener('click', () => {
+        if (turtleColor.style.display === 'none') {
+            turtleColor.style.display = 'inline';
+            toggleButton.textContent = 'Ukryj Kolor';
+        } else {
+            turtleColor.style.display = 'none';
+            toggleButton.textContent = 'Pokaż Kolor';
+        }
+    });
+</script>
+
+<script src="https://cdn.socket.io/4.3.2/socket.io.min.js"></script>
+<script src="{{ url_for('static', filename='js/script.js') }}"></script>
+<script>
+      const turtle_colors = {{ turtle_colors | tojson }};
+</script>
+
 </body>
 </html>
+

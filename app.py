@@ -20,11 +20,17 @@ turtles = [
 
 cards = {
     "Yellow:+1",
+    "Yellow:-1",
     "Green:+1" ,
+    "Green:-1",
     "Red:+1" ,
+    "Red:-1",
     "Blue:+1" ,
+    "Blue:-1",
     "Purple:+1",
+    "Purple:-1",
     "Joker:+1" ,
+    "Joker:-1",
     "Joker:+2"
 }
 
@@ -70,6 +76,12 @@ def play_card():
         """, (player_id, new_card))
 
         mysql.connection.commit()
+
+        socketio.emit('card_played', {
+            'player_id': player_id,
+            'card': card,
+            'new_card': new_card,
+        })
 
         return jsonify({
             'success': True,
