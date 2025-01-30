@@ -150,7 +150,27 @@ function getCardClass(cardText) {
     if (cardText.includes('Purple')) return 'purple';
     return '';
 }
+socket.on('card_played', (data) => {
+    const logMessage = `Gracz ${data.player_id} zagrał kartę: ${data.card} i otrzymał nową kartę: ${data.new_card}`;
+    console.log(logMessage)
+    addLog(logMessage);
+});
 
+function addLog(message) {
+    const logContainer = document.getElementById('log-container');
+    if (!logContainer) {
+        console.error('Log container not found!');
+        return;
+    }
+
+    const logEntry = document.createElement('div');
+    logEntry.className = 'log-entry';
+    logEntry.textContent = message;
+    logContainer.appendChild(logEntry);
+
+    // Przewiń do najnowszego loga
+    logContainer.scrollTop = logContainer.scrollHeight;
+}
 document.addEventListener('DOMContentLoaded', () => {
     console.log('Document loaded, adding drag and drop handlers');
     addDragAndDropHandlers();
